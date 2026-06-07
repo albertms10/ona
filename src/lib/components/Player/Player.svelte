@@ -1,5 +1,7 @@
 <script lang="ts">
+  import { RotateCcwIcon } from "@lucide/svelte";
   import { onDestroy, tick } from "svelte";
+  import { Button } from "../ui/button";
 
   let audio: HTMLAudioElement;
   let timelineSection: HTMLElement;
@@ -547,29 +549,15 @@
 
   <section class="transport" aria-label="Playback controls">
     <div class="transport-left">
-      <button
-        class="transport-button pill"
-        onclick={() => jump(-1)}
+      <Button
+        variant="outline"
+        size="icon"
         aria-label="Jump back"
+        onclick={() => jump(-1)}
         disabled={!audioUrl}
       >
-        <!-- https://feathericons.dev/?search=rotate-ccw&iconset=feather -->
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          width="24"
-          height="24"
-          class="main-grid-item-icon"
-          fill="none"
-          stroke="currentColor"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-        >
-          <polyline points="1 4 1 10 7 10" />
-          <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
-        </svg>
-      </button>
+        <RotateCcwIcon />
+      </Button>
     </div>
 
     <div class="transport-center">
@@ -675,3 +663,7 @@
     </div>
   </section>
 </div>
+
+<style>
+  @import "./Player.css";
+</style>
