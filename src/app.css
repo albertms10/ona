@@ -412,8 +412,8 @@ body {
     linear-gradient(
       90deg,
       rgba(0, 0, 0, 0.1) 0%,
-      rgba(0, 0, 0, 0.2) var(--seek-progress),
-      transparent var(--seek-progress)
+      rgba(0, 0, 0, 0.2) 100%,
+      transparent 100%
     ),
     radial-gradient(
       circle at var(--glow-a-x, 18%) var(--glow-a-y, 15%),
@@ -432,6 +432,18 @@ body {
       var(--gradient-c, #ec4899) 100%
     ),
     linear-gradient(0deg, rgb(255 255 255 / 0.08), rgb(255 255 255 / 0.08));
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat;
+  background-size:
+    var(--seek-fill, 0%) 100%,
+    auto,
+    auto,
+    auto,
+    auto;
+  transition:
+    background-size 260ms cubic-bezier(0.2, 0.9, 0.2, 1),
+    background 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 0.28),
     inset 0 -26px 52px rgb(15 23 42 / 0.18),
@@ -439,10 +451,6 @@ body {
 
   cursor: grab;
   touch-action: pan-y;
-  transition:
-    background 180ms ease,
-    box-shadow 180ms ease,
-    transform 180ms ease;
 }
 
 .seek:active {

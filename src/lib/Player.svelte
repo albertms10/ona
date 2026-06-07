@@ -38,6 +38,7 @@
 
     return [
       `--seek-progress: ${seekValue}%`,
+      `--seek-fill: ${seekValue}%`,
       `--gradient-angle: ${angle}deg`,
       `--gradient-a: oklch(69% 0.18 ${baseHue})`,
       `--gradient-b: oklch(72% 0.17 ${secondHue})`,
