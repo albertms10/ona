@@ -373,6 +373,31 @@
       aria-label="Audio position"
       oninput={(event) => seekToPercent(event.currentTarget.value)}
     />
+
+    {#if !audioUrl}
+      <div class="timeline-empty-source">
+        <label class="file-picker">
+          File
+          <input type="file" accept="audio/*" onchange={loadLocalAudio} />
+        </label>
+
+        <form
+          class="url-picker"
+          onsubmit={(event) => {
+            event.preventDefault();
+            void loadAudioUrl();
+          }}
+        >
+          <input
+            bind:value={urlInput}
+            type="url"
+            placeholder="Audio URL"
+            aria-label="Audio URL"
+          />
+          <button type="submit">Load</button>
+        </form>
+      </div>
+    {/if}
   </section>
 
   <section class="transport" aria-label="Playback controls">
@@ -409,30 +434,5 @@
     </div>
   </section>
 
-  <details class="source-panel">
-    <summary>Audio source</summary>
 
-    <div class="audio-source">
-      <label class="file-picker">
-        File
-        <input type="file" accept="audio/*" onchange={loadLocalAudio} />
-      </label>
-
-      <form
-        class="url-picker"
-        onsubmit={(event) => {
-          event.preventDefault();
-          void loadAudioUrl();
-        }}
-      >
-        <input
-          bind:value={urlInput}
-          type="url"
-          placeholder="Audio URL"
-          aria-label="Audio URL"
-        />
-        <button type="submit">Load</button>
-      </form>
-    </div>
-  </details>
 </div>

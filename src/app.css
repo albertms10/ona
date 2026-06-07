@@ -164,6 +164,40 @@ body {
   text-shadow: 0 1px 10px rgb(15 23 42 / 0.42);
 }
 
+.timeline-empty-source {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+
+  padding: 1rem;
+  pointer-events: auto;
+}
+
+.timeline-empty-source .file-picker,
+.timeline-empty-source .url-picker {
+  background: rgb(255 255 255 / 0.14);
+  border: 1px solid rgb(255 255 255 / 0.12);
+  color: white;
+  backdrop-filter: blur(8px);
+}
+
+.timeline-empty-source .url-picker input {
+  color: inherit;
+}
+
+@media (prefers-color-scheme: dark) {
+  .timeline-empty-source .file-picker,
+  .timeline-empty-source .url-picker {
+    background: rgb(15 23 42 / 0.48);
+    border: 1px solid rgb(255 255 255 / 0.06);
+  }
+}
+
 .timeline-time output {
   padding: 0.25rem 0.55rem;
 
