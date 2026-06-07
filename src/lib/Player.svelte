@@ -5,6 +5,7 @@
   let timelineSection: HTMLElement;
   let audioUrl = $state<string | null>(null);
   let urlInput = $state("");
+  let clipboardStatus = $state<"unknown" | "valid" | "invalid">("unknown");
   let gradientSeed = $state<number>(Math.floor(Math.random() * 4294967296));
   let objectAudioUrl: string | null = null;
   let currentTime = $state(0);
@@ -127,6 +128,39 @@
 
     await tick();
     audio.load();
+
+    // Wait for metadata or canplay so duration/currentTime are available,
+    // then attempt to autoplay (best-effort; may be blocked by autoplay policies).
+    await new Promise<void>((resolve) => {
+      if (audio.readyState >= 1) {
+        resolve();
+        return;
+      }
+
+      const onLoaded = () => {
+        cleanup();
+        resolve();
+      };
+
+      const onCanPlay = () => {
+        cleanup();
+        resolve();
+      };
+
+      function cleanup() {
+        audio.removeEventListener("loadedmetadata", onLoaded);
+        audio.removeEventListener("canplay", onCanPlay);
+      }
+
+      audio.addEventListener("loadedmetadata", onLoaded);
+      audio.addEventListener("canplay", onCanPlay);
+    });
+
+    try {
+      await audio.play();
+    } catch (err) {
+      // Autoplay may be blocked; leave the player paused.
+    }
   }
 
   function revokeObjectAudioUrl() {
@@ -154,6 +188,83 @@
 
     revokeObjectAudioUrl();
     await loadAudioSource(source, hashStringToSeed(source));
+  }
+
+  async function pasteAndLoadFromClipboard() {
+    clipboardStatus = "unknown";
+
+    try {
+      const text = await navigator.clipboard.readText();
+
+      if (!text) {
+        clipboardStatus = "invalid";
+        return;
+      }
+
+      try {
+        const parsed = new URL(text);
+
+        if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+          // Validate by attempting to load metadata from the URL using a temporary Audio element.
+          clipboardStatus = "unknown";
+
+          const testAudio = new Audio();
+          testAudio.preload = "metadata";
+          testAudio.src = text;
+
+          const success = await new Promise<boolean>((resolve) => {
+            let settled = false;
+
+            const onLoaded = () => {
+              if (settled) return;
+              settled = true;
+              cleanup();
+              resolve(true);
+            };
+
+            const onError = () => {
+              if (settled) return;
+              settled = true;
+              cleanup();
+              resolve(false);
+            };
+
+            const timeoutId = setTimeout(() => {
+              if (settled) return;
+              settled = true;
+              cleanup();
+              resolve(false);
+            }, 7000);
+
+            function cleanup() {
+              clearTimeout(timeoutId);
+              testAudio.removeEventListener("loadedmetadata", onLoaded);
+              testAudio.removeEventListener("error", onError);
+            }
+
+            testAudio.addEventListener("loadedmetadata", onLoaded);
+            testAudio.addEventListener("error", onError);
+          });
+
+          if (!success) {
+            clipboardStatus = "invalid";
+            return;
+          }
+
+          clipboardStatus = "valid";
+          urlInput = text;
+          revokeObjectAudioUrl();
+          await loadAudioSource(text, hashStringToSeed(text));
+          return;
+        }
+
+        clipboardStatus = "invalid";
+      } catch (err) {
+        clipboardStatus = "invalid";
+      }
+    } catch (err) {
+      clipboardStatus = "invalid";
+    }
   }
 
   function seekToPercent(value: string) {
@@ -421,21 +532,15 @@
           <input type="file" accept="audio/*" onchange={loadLocalAudio} />
         </label>
 
-        <form
-          class="url-picker"
-          onsubmit={(event) => {
-            event.preventDefault();
-            void loadAudioUrl();
-          }}
-        >
-          <input
-            bind:value={urlInput}
-            type="url"
-            placeholder="Audio URL"
-            aria-label="Audio URL"
-          />
-          <button type="submit">Load</button>
-        </form>
+        <div class="url-picker" class:invalid={clipboardStatus === "invalid"}>
+          <button
+            type="button"
+            class="clipboard-button"
+            onclick={pasteAndLoadFromClipboard}
+          >
+            Paste URL
+          </button>
+        </div>
       </div>
     {/if}
   </section>
@@ -473,6 +578,22 @@
         onclick={togglePlayback}
       >
         {#if paused}
+          <!-- https://feathericons.dev/?search=play&iconset=feather -->
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            width="24"
+            height="24"
+            class="main-grid-item-icon"
+            fill="none"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+          >
+            <polygon points="5 3 19 12 5 21 5 3" />
+          </svg>
+        {:else}
           <!-- https://feathericons.dev/?search=pause&iconset=feather -->
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -488,22 +609,6 @@
           >
             <rect height="16" width="4" x="6" y="4" />
             <rect height="16" width="4" x="14" y="4" />
-          </svg>
-        {:else}
-          <!-- https://feathericons.dev/?search=play&iconset=feather -->
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            width="24"
-            height="24"
-            class="main-grid-item-icon"
-            fill="none"
-            stroke="currentColor"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-          >
-            <polygon points="5 3 19 12 5 21 5 3" />
           </svg>
         {/if}
       </button>

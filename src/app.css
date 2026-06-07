@@ -220,6 +220,38 @@ body {
   color: inherit;
 }
 
+.timeline-empty-source .url-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.clipboard-button {
+  min-height: 40px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0 0.75rem;
+  background: transparent;
+  color: inherit;
+  font-weight: 700;
+}
+
+.clipboard-status {
+  color: #ff6b6b;
+  font-weight: 700;
+  font-size: 0.825rem;
+}
+
+.timeline-empty-source .url-picker.invalid {
+  border-color: rgb(255 107 107 / 0.9);
+  background: rgb(255 107 107 / 0.12);
+  color: rgb(127 14 14);
+}
+
+.timeline-empty-source .url-picker.invalid .clipboard-button {
+  border-color: rgb(255 107 107 / 0.9);
+}
+
 @media (prefers-color-scheme: dark) {
   .timeline-empty-source .file-picker,
   .timeline-empty-source .url-picker {
