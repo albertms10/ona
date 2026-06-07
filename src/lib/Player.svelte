@@ -549,7 +549,7 @@
     <div class="transport-left">
       <button
         class="transport-button pill"
-        onclick={() => jump(-1)}
+        onclick={() => jump(-2)}
         aria-label="Jump back"
         disabled={!audioUrl}
       >
@@ -651,7 +651,7 @@
     <div class="transport-right">
       <button
         class="transport-button pill"
-        onclick={() => jump(1)}
+        onclick={() => jump(2)}
         aria-label="Jump forward"
         disabled={!audioUrl}
       >
