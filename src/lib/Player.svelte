@@ -1,8 +1,12 @@
 <script lang="ts">
+  import { onDestroy, tick } from "svelte";
   import exerciseUrl from "../assets/exercise.mp3";
 
   let audio: HTMLAudioElement;
   let timelineSection: HTMLElement;
+  let audioUrl = $state(exerciseUrl);
+  let urlInput = $state("");
+  let objectAudioUrl: string | null = null;
   let currentTime = $state(0);
   let duration = $state(0);
   let paused = $state(true);
@@ -58,6 +62,48 @@
     }
 
     audio.pause();
+  }
+
+  function resetAudioState() {
+    currentTime = 0;
+    duration = 0;
+    paused = true;
+    clearLoop();
+  }
+
+  async function loadAudioSource(source: string) {
+    audioUrl = source;
+    resetAudioState();
+
+    await tick();
+    audio.load();
+  }
+
+  function revokeObjectAudioUrl() {
+    if (objectAudioUrl === null) return;
+
+    URL.revokeObjectURL(objectAudioUrl);
+    objectAudioUrl = null;
+  }
+
+  async function loadLocalAudio(event: Event) {
+    const input = event.currentTarget as HTMLInputElement;
+    const file = input.files?.[0];
+
+    if (!file) return;
+
+    revokeObjectAudioUrl();
+    objectAudioUrl = URL.createObjectURL(file);
+    await loadAudioSource(objectAudioUrl);
+  }
+
+  async function loadAudioUrl() {
+    const source = urlInput.trim();
+
+    if (!source) return;
+
+    revokeObjectAudioUrl();
+    await loadAudioSource(source);
   }
 
   function seekToPercent(value: string) {
@@ -196,6 +242,8 @@
         break;
     }
   }
+
+  onDestroy(revokeObjectAudioUrl);
 </script>
 
 <svelte:document onkeydown={handleKeydown} />
@@ -206,15 +254,32 @@
     bind:currentTime
     bind:duration
     bind:paused
+    src={audioUrl}
     ontimeupdate={handleTimeUpdate}
     preload="metadata"
-  >
-    <source src={exerciseUrl} type="audio/mpeg" />
-  </audio>
+  ></audio>
 
   <header class="time-panel">
     <output>{formatTime(currentTime)}</output>
-    <div class="loop-status">{loopActive ? "Loop Active" : "Loop Off"}</div>
+    <div class="audio-source">
+      <label class="file-picker">
+        File
+        <input type="file" accept="audio/*" onchange={loadLocalAudio} />
+      </label>
+
+      <form class="url-picker" onsubmit={(event) => {
+        event.preventDefault();
+        void loadAudioUrl();
+      }}>
+        <input
+          bind:value={urlInput}
+          type="url"
+          placeholder="Audio URL"
+          aria-label="Audio URL"
+        />
+        <button type="submit">Load</button>
+      </form>
+    </div>
     <output>{formatTime(duration)}</output>
   </header>
 

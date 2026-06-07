@@ -50,6 +50,7 @@ body {
 
 .time-panel {
   display: flex;
+  gap: 0.75rem;
   justify-content: space-between;
   align-items: center;
 
@@ -61,9 +62,76 @@ body {
   font-weight: 600;
 }
 
-.loop-status {
+.audio-source {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.5rem;
+  align-items: center;
+
+  flex: 1;
+  max-width: 420px;
+}
+
+.file-picker,
+.url-picker {
+  min-height: 40px;
+
+  border: 1px solid var(--border);
+  border-radius: 999px;
+
+  background: rgb(255 255 255 / 0.72);
+}
+
+.file-picker {
+  display: grid;
+  place-items: center;
+
+  padding: 0 0.875rem;
+
   font-size: 0.875rem;
-  opacity: 0.8;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.file-picker input {
+  position: absolute;
+
+  width: 1px;
+  height: 1px;
+
+  opacity: 0;
+  pointer-events: none;
+}
+
+.url-picker {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  overflow: hidden;
+}
+
+.url-picker input {
+  min-width: 0;
+  border: 0;
+  padding: 0 0.75rem;
+
+  background: transparent;
+  color: inherit;
+
+  font: inherit;
+  font-size: 0.875rem;
+}
+
+.url-picker button {
+  min-height: 0;
+  border: 0;
+  border-left: 1px solid var(--border);
+  border-radius: 0;
+  padding: 0 0.875rem;
+
+  background: transparent;
+
+  font-size: 0.875rem;
 }
 
 .timeline-section {
@@ -323,6 +391,11 @@ button {
 @media (prefers-color-scheme: dark) {
   button {
     background: #0f172a;
+  }
+
+  .file-picker,
+  .url-picker {
+    background: rgb(15 23 42 / 0.72);
   }
 }
 
