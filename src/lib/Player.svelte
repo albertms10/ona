@@ -263,31 +263,6 @@
     preload="metadata"
   ></audio>
 
-  <header class="time-panel">
-    <div class="audio-source">
-      <label class="file-picker">
-        File
-        <input type="file" accept="audio/*" onchange={loadLocalAudio} />
-      </label>
-
-      <form
-        class="url-picker"
-        onsubmit={(event) => {
-          event.preventDefault();
-          void loadAudioUrl();
-        }}
-      >
-        <input
-          bind:value={urlInput}
-          type="url"
-          placeholder="Audio URL"
-          aria-label="Audio URL"
-        />
-        <button type="submit">Load</button>
-      </form>
-    </div>
-  </header>
-
   <section
     bind:this={timelineSection}
     class="timeline-section"
@@ -351,40 +326,57 @@
   </section>
 
   <section class="transport" aria-label="Playback controls">
+    <button class="transport-button" onclick={() => jump(-1)}>−1</button>
+
     <button
-      class="play"
+      class="transport-button play"
       aria-label={paused ? "Play" : "Pause"}
       onclick={togglePlayback}
     >
       {paused ? "▶" : "❚❚"}
     </button>
+
+    <button class="transport-button" onclick={() => jump(1)}>+1</button>
   </section>
 
-  <section class="jump-grid" aria-label="Precise navigation">
-    <button onclick={() => jump(-5)}>−5s</button>
-    <button onclick={() => jump(-2)}>−2s</button>
-    <button onclick={() => jump(-1)}>−1s</button>
-
-    <button onclick={() => jump(1)}>+1s</button>
-    <button onclick={() => jump(2)}>+2s</button>
-    <button onclick={() => jump(5)}>+5s</button>
-  </section>
-
-  <section class="loop-controls" aria-label="A-B loop controls">
-    <button onclick={setPointA}>Set A</button>
-    <button onclick={setPointB}>Set B</button>
-    <button onclick={clearLoop}>Clear</button>
-  </section>
-
-  <section class="loop-info">
-    <div>
-      A:
-      <span>{pointA === null ? "—" : formatTime(pointA)}</span>
+  <section class="loop-panel" aria-label="Loop controls">
+    <div class="loop-summary">
+      <span>{loopActive ? "Loop active" : loopPending ? "Choose B" : "Loop off"}</span>
+      <span>A {pointA === null ? "—" : formatTime(pointA)}</span>
+      <span>B {pointB === null ? "—" : formatTime(pointB)}</span>
     </div>
 
-    <div>
-      B:
-      <span>{pointB === null ? "—" : formatTime(pointB)}</span>
+    <div class="loop-controls">
+      <button class="loop-action" onclick={setPointA}>A In</button>
+      <button class="loop-action" onclick={setPointB}>B Out</button>
+      <button class="loop-action danger" onclick={clearLoop}>Clear</button>
     </div>
   </section>
+
+  <details class="source-panel">
+    <summary>Audio source</summary>
+
+    <div class="audio-source">
+      <label class="file-picker">
+        File
+        <input type="file" accept="audio/*" onchange={loadLocalAudio} />
+      </label>
+
+      <form
+        class="url-picker"
+        onsubmit={(event) => {
+          event.preventDefault();
+          void loadAudioUrl();
+        }}
+      >
+        <input
+          bind:value={urlInput}
+          type="url"
+          placeholder="Audio URL"
+          aria-label="Audio URL"
+        />
+        <button type="submit">Load</button>
+      </form>
+    </div>
+  </details>
 </div>
