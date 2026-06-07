@@ -451,7 +451,8 @@ body {
     0 16px 36px rgb(15 23 42 / 0.12);
 
   cursor: grab;
-  touch-action: pan-y;
+  touch-action: manipulation pan-y;
+  -ms-touch-action: manipulation;
 }
 
 .seek:active {
