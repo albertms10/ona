@@ -145,7 +145,11 @@
       return;
     }
 
-    pointB = clamp(time, Math.min(duration, pointA + minLoopDuration), duration);
+    pointB = clamp(
+      time,
+      Math.min(duration, pointA + minLoopDuration),
+      duration,
+    );
   }
 
   function startLoopPointDrag(point: "a" | "b", event: PointerEvent) {
@@ -260,17 +264,19 @@
   ></audio>
 
   <header class="time-panel">
-    <output>{formatTime(currentTime)}</output>
     <div class="audio-source">
       <label class="file-picker">
         File
         <input type="file" accept="audio/*" onchange={loadLocalAudio} />
       </label>
 
-      <form class="url-picker" onsubmit={(event) => {
-        event.preventDefault();
-        void loadAudioUrl();
-      }}>
+      <form
+        class="url-picker"
+        onsubmit={(event) => {
+          event.preventDefault();
+          void loadAudioUrl();
+        }}
+      >
         <input
           bind:value={urlInput}
           type="url"
@@ -280,10 +286,18 @@
         <button type="submit">Load</button>
       </form>
     </div>
-    <output>{formatTime(duration)}</output>
   </header>
 
-  <section bind:this={timelineSection} class="timeline-section" aria-label="Timeline">
+  <section
+    bind:this={timelineSection}
+    class="timeline-section"
+    aria-label="Timeline"
+  >
+    <div class="timeline-time" aria-hidden="true">
+      <output>{formatTime(currentTime)}</output>
+      <output>{formatTime(duration)}</output>
+    </div>
+
     <div
       class:active={loopActive}
       class:pending={loopPending}
