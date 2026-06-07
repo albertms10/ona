@@ -202,6 +202,20 @@ body {
   box-shadow: 0 6px 18px rgb(15 23 42 / 0.12);
 }
 
+.timeline-empty-source .file-picker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0.875rem;
+  font-weight: 700;
+}
+
+.timeline-empty-source .file-picker svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
 .timeline-empty-source .url-picker input {
   color: inherit;
 }
@@ -464,21 +478,57 @@ body {
 }
 
 .transport {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 0.5rem;
+}
+
+.transport-left,
+.transport-center,
+.transport-right {
+  display: flex;
   align-items: center;
 }
 
-.transport-middle {
-  display: flex;
+.transport-center {
+  flex: 1 1 auto;
+  justify-content: center;
   gap: 0.5rem;
-  align-items: center;
+}
+
+.transport-left,
+.transport-right {
+  flex: 0 0 auto;
+  gap: 0.5rem;
+}
+
+.pill {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+}
+
+.play {
+  width: 72px;
+  height: 72px;
+  border-radius: 999px;
+  font-size: 1.25rem;
+  display: grid;
+  place-items: center;
 }
 
 .loop-toggle {
-  min-width: 44px;
-  padding: 0 0.5rem;
+  width: 44px;
+  height: 44px;
+}
+
+/* Ensure pill buttons don't get overridden padding from .transport-button */
+.transport-button.pill {
+  padding: 0 !important;
 }
 
 .loop-toggle.active {
@@ -501,6 +551,21 @@ body {
 
   font-size: 0.875rem;
   line-height: 1;
+}
+
+.transport-button svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.play svg {
+  width: 28px;
+  height: 28px;
+}
+
+.transport-button.pill {
+  padding: 0;
 }
 
 .play {
