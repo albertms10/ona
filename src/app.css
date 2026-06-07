@@ -45,6 +45,14 @@ body,
     sans-serif;
 }
 
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: auto;
+}
+
 body {
   margin: 0;
   background: var(--bg);
