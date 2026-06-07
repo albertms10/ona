@@ -675,3 +675,7 @@
     </div>
   </section>
 </div>
+
+<style>
+@import './Player.css';
+</style>
