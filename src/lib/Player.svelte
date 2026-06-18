@@ -233,8 +233,7 @@
   async function loadExampleAudio() {
     clipboardStatus = "unknown";
 
-    const example =
-      "https://file-examples.com/storage/fe608021486a33c7b940d2c/2017/11/file_example_MP3_1MG.mp3";
+    const example = "https://samplelib.com/mp3/sample-6s.mp3";
 
     try {
       const testAudio = new Audio();
