@@ -1,8 +1,10 @@
-# Better Audio Player
+# Ona
 
-![Better Audio Player screenshot](docs/img/player.png)
+![Ona screenshot](docs/img/player.png)
 
-A small, mobile-first audio player built with Svelte focusing on a compact, at-a-glance UI and smooth touch interactions.
+Ona is a small, mobile-first audio player built with Svelte focusing on a compact, at-a-glance UI and smooth touch interactions.
+
+_Ona_ comes from the Catalan word for “wave”, a nod to both sound waves and the fluid, responsive experience the player aims to provide.
 
 **Highlights:**
 
