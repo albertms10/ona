@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onDestroy, tick } from "svelte";
+  import { onDestroy, onMount, tick } from "svelte";
   import { clamp, formatTime, hashFileToSeed, hashStringToSeed } from "./utils";
 
   let audio: HTMLAudioElement;
@@ -209,6 +209,14 @@
           clipboardStatus = "valid";
           revokeObjectAudioUrl();
           await loadAudioSource(text, hashStringToSeed(text));
+          // update query param so the URL can be shared / revisited
+          try {
+            const url = new URL(window.location.href);
+            url.searchParams.set("a", text);
+            history.replaceState(null, "", url.toString());
+          } catch (e) {
+            // ignore
+          }
           return;
         }
 
@@ -220,6 +228,71 @@
       clipboardStatus = "invalid";
     }
   }
+
+  // On mount, if there's an `a` query param, attempt to load it.
+  onMount(async () => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const a = params.get("a");
+
+      if (!a) return;
+
+      // Validate URL format
+      try {
+        const parsed = new URL(a);
+
+        if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return;
+      } catch (err) {
+        return;
+      }
+
+      // Test metadata load before committing
+      const testAudio = new Audio();
+      testAudio.preload = "metadata";
+      testAudio.src = a;
+
+      const success = await new Promise<boolean>((resolve) => {
+        let settled = false;
+
+        const onLoaded = () => {
+          if (settled) return;
+          settled = true;
+          cleanup();
+          resolve(true);
+        };
+
+        const onError = () => {
+          if (settled) return;
+          settled = true;
+          cleanup();
+          resolve(false);
+        };
+
+        const timeoutId = setTimeout(() => {
+          if (settled) return;
+          settled = true;
+          cleanup();
+          resolve(false);
+        }, 7000);
+
+        function cleanup() {
+          clearTimeout(timeoutId);
+          testAudio.removeEventListener("loadedmetadata", onLoaded);
+          testAudio.removeEventListener("error", onError);
+        }
+
+        testAudio.addEventListener("loadedmetadata", onLoaded);
+        testAudio.addEventListener("error", onError);
+      });
+
+      if (!success) return;
+
+      revokeObjectAudioUrl();
+      await loadAudioSource(a, hashStringToSeed(a));
+    } catch (err) {
+      // ignore
+    }
+  });
 
   function seekToPercent(value: string) {
     if (!duration) return;
