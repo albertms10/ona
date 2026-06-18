@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onDestroy, tick } from "svelte";
-  import { hashFileToSeed, hashStringToSeed } from "./utils";
+  import { clamp, formatTime, hashFileToSeed, hashStringToSeed } from "./utils";
 
   let audio: HTMLAudioElement;
   let timelineSection: HTMLElement;
@@ -65,16 +65,6 @@
 
     return `--loop-left: ${left}%; --loop-width: ${width}%; --loop-a: ${markerA}%; --loop-end: ${markerEnd}%;`;
   });
-
-  function formatTime(seconds: number) {
-    if (!Number.isFinite(seconds)) return "0:00.0";
-
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    const tenth = Math.floor((seconds % 1) * 10);
-
-    return `${mins}:${String(secs).padStart(2, "0")}.${tenth}`;
-  }
 
   async function togglePlayback() {
     if (paused) {
@@ -269,10 +259,6 @@
 
   function jump(seconds: number) {
     currentTime += seconds;
-  }
-
-  function clamp(value: number, min: number, max: number) {
-    return Math.min(Math.max(value, min), max);
   }
 
   function timeFromPointer(event: PointerEvent) {
