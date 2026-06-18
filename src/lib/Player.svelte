@@ -229,6 +229,74 @@
     }
   }
 
+  // Load a small example audio URL (validates metadata first)
+  async function loadExampleAudio() {
+    clipboardStatus = "unknown";
+
+    const example =
+      "https://file-examples.com/storage/fe608021486a33c7b940d2c/2017/11/file_example_MP3_1MG.mp3";
+
+    try {
+      const testAudio = new Audio();
+      testAudio.preload = "metadata";
+      testAudio.src = example;
+
+      const success = await new Promise<boolean>((resolve) => {
+        let settled = false;
+
+        const onLoaded = () => {
+          if (settled) return;
+          settled = true;
+          cleanup();
+          resolve(true);
+        };
+
+        const onError = () => {
+          if (settled) return;
+          settled = true;
+          cleanup();
+          resolve(false);
+        };
+
+        const timeoutId = setTimeout(() => {
+          if (settled) return;
+          settled = true;
+          cleanup();
+          resolve(false);
+        }, 7000);
+
+        function cleanup() {
+          clearTimeout(timeoutId);
+          testAudio.removeEventListener("loadedmetadata", onLoaded);
+          testAudio.removeEventListener("error", onError);
+        }
+
+        testAudio.addEventListener("loadedmetadata", onLoaded);
+        testAudio.addEventListener("error", onError);
+      });
+
+      if (!success) {
+        clipboardStatus = "invalid";
+        return;
+      }
+
+      clipboardStatus = "valid";
+      revokeObjectAudioUrl();
+      await loadAudioSource(example, hashStringToSeed(example));
+
+      // update query param so the example can be linked
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.set("a", example);
+        history.replaceState(null, "", url.toString());
+      } catch (e) {
+        // ignore
+      }
+    } catch (err) {
+      clipboardStatus = "invalid";
+    }
+  }
+
   // On mount, if there's an `a` query param, attempt to load it.
   onMount(async () => {
     try {
@@ -617,6 +685,32 @@
             </svg>
 
             Paste URL
+          </button>
+          <button
+            type="button"
+            class="clipboard-button"
+            onclick={loadExampleAudio}
+            title="Load example audio"
+          >
+            <!-- example icon: music -->
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              width="16"
+              height="16"
+              class="main-grid-item-icon"
+              fill="none"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+            >
+              <path d="M9 18V5l12-2v13" />
+              <circle cx="6" cy="18" r="3" />
+              <circle cx="18" cy="16" r="3" />
+            </svg>
+
+            Load Example
           </button>
         </div>
       </div>
