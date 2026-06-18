@@ -1,6 +1,8 @@
 <script lang="ts">
   import { onDestroy, onMount, tick } from "svelte";
   import { clamp, formatTime, hashFileToSeed, hashStringToSeed } from "./utils";
+  import InnerGlowAudioVisualizer from "./visualizations/audio/InnerGlowAudioVisualizer.svelte";
+  import { AudioAnalysis } from "./visualizations/wavtools";
 
   let audio: HTMLAudioElement;
   let timelineSection: HTMLElement;
@@ -369,6 +371,7 @@
 
   // Mobile-first pointer-based scrub (drag) support for the seek bar
   let draggingSeek = false;
+  let audioAnalyzer: AudioAnalysis | null = $state(null);
 
   function updateSeekFromPointer(event: PointerEvent) {
     if (!duration) return;
@@ -396,6 +399,42 @@
     (event.currentTarget as HTMLElement).releasePointerCapture(event.pointerId);
     draggingSeek = false;
   }
+
+  $effect(() => {
+    if (!audio) {
+      audioAnalyzer = null;
+      return;
+    }
+
+    let created = false;
+    try {
+      audioAnalyzer = new AudioAnalysis(audio);
+      created = true;
+
+      if (audioAnalyzer && audioAnalyzer.resumeIfSuspended) {
+        void audioAnalyzer.resumeIfSuspended();
+      }
+    } catch (e) {
+      audioAnalyzer = null;
+    }
+
+    return () => {
+      try {
+        if (
+          created &&
+          audioAnalyzer &&
+          audioAnalyzer.context &&
+          audioAnalyzer.context.close
+        ) {
+          void audioAnalyzer.context.close();
+        }
+      } catch (e) {
+        // ignore
+      }
+
+      audioAnalyzer = null;
+    };
+  });
 
   function jump(seconds: number) {
     currentTime += seconds;
@@ -542,7 +581,20 @@
     }
   }
 
-  onDestroy(revokeObjectAudioUrl);
+  onDestroy(() => {
+    revokeObjectAudioUrl();
+    try {
+      if (
+        audioAnalyzer &&
+        audioAnalyzer.context &&
+        audioAnalyzer.context.close
+      ) {
+        void audioAnalyzer.context.close();
+      }
+    } catch (e) {
+      // ignore
+    }
+  });
 </script>
 
 <svelte:document onkeydown={handleKeydown} />
@@ -563,6 +615,13 @@
     class="timeline-section"
     aria-label="Timeline"
   >
+    <InnerGlowAudioVisualizer
+      class="timeline-visualizer"
+      aria-hidden="true"
+      audio={audioAnalyzer}
+      glow={18}
+      detail={64}
+    />
     {#if audioUrl}
       <div class="timeline-time" aria-hidden="true">
         <div>
