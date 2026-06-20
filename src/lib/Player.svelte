@@ -8,7 +8,7 @@
   import Waveform from "./Waveform.svelte";
 
   let audio = $state(new Audio());
-  let timelineSection: HTMLElement;
+  let timelineSection = $state<HTMLElement | null>(null);
   let audioUrl = $state<string | null>(null);
   let gradientSeed = $state<number>(Math.floor(Math.random() * 4294967296));
   let currentTime = $state(0);
@@ -82,7 +82,7 @@
   let draggingSeek = false;
 
   function updateSeekFromPointer(event: PointerEvent) {
-    if (!duration) return;
+    if (!duration || !timelineSection) return;
     const rect = timelineSection.getBoundingClientRect();
     const percent = clamp((event.clientX - rect.left) / rect.width, 0, 1);
     currentTime = percent * duration;
@@ -113,6 +113,7 @@
   }
 
   function timeFromPointer(event: PointerEvent) {
+    if (!timelineSection) return 0;
     const rect = timelineSection.getBoundingClientRect();
     const percent = clamp((event.clientX - rect.left) / rect.width, 0, 1);
 
