@@ -35,11 +35,16 @@
       return;
     }
 
-    values = audio.getFrequencies(
-      analysisType,
-      minDecibels,
-      maxDecibels,
-    ).values;
+    try {
+      values = audio.getFrequencies(
+        analysisType,
+        minDecibels,
+        maxDecibels,
+      ).values;
+    } catch (e) {
+      // If the analyzer isn't connected yet, return a silent spectrum instead of throwing.
+      values = new Float32Array([0]);
+    }
   });
 
   const getValues = $derived((detail: number) =>
