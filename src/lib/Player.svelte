@@ -1,6 +1,7 @@
 <script lang="ts">
   import LoopTime from "./LoopTime.svelte";
   import SourcePicker from "./SourcePicker.svelte";
+  import TimelineLoop from "./TimelineLoop.svelte";
   import TimelineTime from "./TimelineTime.svelte";
   import Transport from "./Transport.svelte";
   import { clamp } from "./utils";
@@ -50,21 +51,6 @@
       `--glow-b-x: ${glowBX}%`,
       `--glow-b-y: ${glowBY}%`,
     ].join("; ");
-  });
-
-  const highlightStyle = $derived.by(() => {
-    if (!duration || pointA === null) return "";
-
-    const rangeEnd = loopActive && pointB !== null ? pointB : currentTime;
-    const start = Math.min(pointA, rangeEnd);
-    const end = Math.max(pointA, rangeEnd);
-    const range = end - start;
-    const left = (start / duration) * 100;
-    const width = (range / duration) * 100;
-    const markerA = range ? ((pointA - start) / range) * 100 : 0;
-    const markerEnd = range ? ((rangeEnd - start) / range) * 100 : 100;
-
-    return `--loop-left: ${left}%; --loop-width: ${width}%; --loop-a: ${markerA}%; --loop-end: ${markerEnd}%;`;
   });
 
   async function togglePlayback() {
@@ -169,33 +155,25 @@
   }
 
   function handleLoopPointDrag(event: PointerEvent) {
-    if (draggingLoopPoint === null) return;
-
+    if (!draggingLoopPoint) return;
     event.preventDefault();
     moveLoopPoint(draggingLoopPoint, event);
   }
 
   function stopLoopPointDrag(event: PointerEvent) {
-    if (draggingLoopPoint === null) return;
-
+    if (!draggingLoopPoint) return;
     (event.currentTarget as HTMLElement).releasePointerCapture(event.pointerId);
     draggingLoopPoint = null;
   }
 
   function setPointA() {
     pointA = currentTime;
-
-    if (pointB !== null && pointB <= pointA) {
-      pointB = null;
-    }
+    if (pointB !== null && pointB <= pointA) pointB = null;
   }
 
   function setPointB() {
     pointB = currentTime;
-
-    if (pointA !== null && pointB <= pointA) {
-      pointB = null;
-    }
+    if (pointA !== null && pointB <= pointA) pointB = null;
   }
 
   function clearLoop() {
@@ -204,16 +182,8 @@
   }
 
   function cycleLoop() {
-    if (pointA === null) {
-      setPointA();
-      return;
-    }
-
-    if (pointB === null) {
-      setPointB();
-      return;
-    }
-
+    if (pointA === null) return setPointA();
+    if (pointB === null) return setPointB();
     clearLoop();
   }
 
@@ -289,44 +259,17 @@
       <TimelineTime {currentTime} {duration} />
     {/if}
 
-    <div
-      class:active={loopActive}
-      class:pending={loopPending}
-      class="timeline-highlight"
-      style={highlightStyle}
-    >
-      {#if pointA !== null}
-        <button
-          class="loop-handle loop-handle-a"
-          type="button"
-          aria-label="Drag loop start"
-          title="Drag loop start"
-          onpointerdown={(event) => startLoopPointDrag("a", event)}
-          onpointermove={handleLoopPointDrag}
-          onpointerup={stopLoopPointDrag}
-          onpointercancel={stopLoopPointDrag}
-        >
-          A
-        </button>
-      {/if}
-
-      {#if loopActive}
-        <button
-          class="loop-handle loop-handle-b"
-          type="button"
-          aria-label="Drag loop end"
-          title="Drag loop end"
-          onpointerdown={(event) => startLoopPointDrag("b", event)}
-          onpointermove={handleLoopPointDrag}
-          onpointerup={stopLoopPointDrag}
-          onpointercancel={stopLoopPointDrag}
-        >
-          B
-        </button>
-      {:else if loopPending}
-        <span class="loop-pending-end" aria-hidden="true"></span>
-      {/if}
-    </div>
+    <TimelineLoop
+      {pointA}
+      {pointB}
+      {duration}
+      {currentTime}
+      {loopActive}
+      {loopPending}
+      {startLoopPointDrag}
+      {handleLoopPointDrag}
+      {stopLoopPointDrag}
+    />
 
     <input
       class="seek"

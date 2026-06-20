@@ -56,8 +56,7 @@
   }
 
   function revokeObjectAudioUrl() {
-    if (objectAudioUrl === null) return;
-
+    if (!objectAudioUrl) return;
     URL.revokeObjectURL(objectAudioUrl);
     objectAudioUrl = null;
   }
