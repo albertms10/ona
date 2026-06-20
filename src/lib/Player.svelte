@@ -1,8 +1,10 @@
 <script lang="ts">
   import { onDestroy, onMount, tick } from "svelte";
   import { clamp, formatTime, hashFileToSeed, hashStringToSeed } from "./utils";
+  import InnerGlowAudioVisualizer from "./visualizations/audio/InnerGlowAudioVisualizer.svelte";
+  import { AudioFilePlayer } from "./visualizations/wavtools";
 
-  let audio: HTMLAudioElement;
+  let audioElement: HTMLAudioElement;
   let timelineSection: HTMLElement;
   let audioUrl = $state<string | null>(null);
   let clipboardStatus = $state<"unknown" | "valid" | "invalid">("unknown");
@@ -68,11 +70,11 @@
 
   async function togglePlayback() {
     if (paused) {
-      await audio.play();
+      await audioElement.play();
       return;
     }
 
-    audio.pause();
+    audioElement.pause();
   }
 
   function resetAudioState() {
@@ -91,12 +93,12 @@
     resetAudioState();
 
     await tick();
-    audio.load();
+    audioElement.load();
 
     // Wait for metadata or canplay so duration/currentTime are available,
     // then attempt to autoplay (best-effort; may be blocked by autoplay policies).
     await new Promise<void>((resolve) => {
-      if (audio.readyState >= 1) {
+      if (audioElement.readyState >= 1) {
         resolve();
         return;
       }
@@ -112,16 +114,16 @@
       };
 
       function cleanup() {
-        audio.removeEventListener("loadedmetadata", onLoaded);
-        audio.removeEventListener("canplay", onCanPlay);
+        audioElement.removeEventListener("loadedmetadata", onLoaded);
+        audioElement.removeEventListener("canplay", onCanPlay);
       }
 
-      audio.addEventListener("loadedmetadata", onLoaded);
-      audio.addEventListener("canplay", onCanPlay);
+      audioElement.addEventListener("loadedmetadata", onLoaded);
+      audioElement.addEventListener("canplay", onCanPlay);
     });
 
     try {
-      await audio.play();
+      await audioElement.play();
     } catch (err) {
       // Autoplay may be blocked; leave the player paused.
     }
@@ -369,6 +371,9 @@
 
   // Mobile-first pointer-based scrub (drag) support for the seek bar
   let draggingSeek = false;
+  let audioFilePlayer: AudioFilePlayer | null = $state(null);
+  // Track which URL we used to create the current AudioFilePlayer
+  let lastCreatedAudioUrl: string | null = null;
 
   function updateSeekFromPointer(event: PointerEvent) {
     if (!duration) return;
@@ -396,6 +401,83 @@
     (event.currentTarget as HTMLElement).releasePointerCapture(event.pointerId);
     draggingSeek = false;
   }
+
+  $effect(() => {
+    if (!audioElement || !audioUrl) {
+      lastCreatedAudioUrl = null;
+      audioFilePlayer = null;
+      return;
+    }
+
+    // If we've already created a player for this same URL, do nothing.
+    if (audioUrl === lastCreatedAudioUrl) {
+      return;
+    }
+
+    let cancelled = false;
+    const player = new AudioFilePlayer();
+    let assigned = false;
+
+    (async () => {
+      try {
+        await player.loadFile(audioUrl);
+
+        if (cancelled) {
+          try {
+            if (player.context && player.context.close) {
+              await player.context.close();
+            }
+          } catch (e) {
+            // ignore
+          }
+
+          return;
+        }
+
+        // Only assign the reactive player once it's fully connected/decoded.
+        lastCreatedAudioUrl = audioUrl;
+        audioFilePlayer = player;
+        assigned = true;
+
+        try {
+          player.play();
+        } catch (e) {
+          // play() may throw if autoplay blocked; ignore
+        }
+      } catch (e) {
+        if (!cancelled) {
+          lastCreatedAudioUrl = null;
+          audioFilePlayer = null;
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+
+      try {
+        // If we assigned the player to the reactive variable, close that context.
+        if (
+          assigned &&
+          audioFilePlayer &&
+          audioFilePlayer.context &&
+          audioFilePlayer.context.close
+        ) {
+          void audioFilePlayer.context.close();
+        } else if (player && player.context && player.context.close) {
+          // If the player was created but never assigned, still close its context.
+          void player.context.close();
+        }
+      } catch (e) {
+        // ignore
+      }
+
+      if (assigned) {
+        lastCreatedAudioUrl = null;
+        audioFilePlayer = null;
+      }
+    };
+  });
 
   function jump(seconds: number) {
     currentTime += seconds;
@@ -542,14 +624,27 @@
     }
   }
 
-  onDestroy(revokeObjectAudioUrl);
+  onDestroy(() => {
+    revokeObjectAudioUrl();
+    try {
+      if (
+        audioFilePlayer &&
+        audioFilePlayer.context &&
+        audioFilePlayer.context.close
+      ) {
+        void audioFilePlayer.context.close();
+      }
+    } catch (e) {
+      // ignore
+    }
+  });
 </script>
 
 <svelte:document onkeydown={handleKeydown} />
 
 <div class="player">
   <audio
-    bind:this={audio}
+    bind:this={audioElement}
     bind:currentTime
     bind:duration
     bind:paused
@@ -563,6 +658,13 @@
     class="timeline-section"
     aria-label="Timeline"
   >
+    <InnerGlowAudioVisualizer
+      class="timeline-visualizer"
+      aria-hidden="true"
+      audio={audioFilePlayer}
+      glow={18}
+      detail={64}
+    />
     {#if audioUrl}
       <div class="timeline-time" aria-hidden="true">
         <div>

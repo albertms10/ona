@@ -778,3 +778,10 @@ input:focus-visible {
     transform: translate(-50%, -50%) scale(1.18);
   }
 }
+
+  .timeline-visualizer {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+  }
