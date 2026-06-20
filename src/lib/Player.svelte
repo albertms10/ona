@@ -1,7 +1,9 @@
 <script lang="ts">
+  import LoopTime from "./LoopTime.svelte";
   import SourcePicker from "./SourcePicker.svelte";
+  import TimelineTime from "./TimelineTime.svelte";
   import Transport from "./Transport.svelte";
-  import { clamp, formatTime } from "./utils";
+  import { clamp } from "./utils";
 
   let audio: HTMLAudioElement = $state(new Audio());
   let timelineSection: HTMLElement;
@@ -284,12 +286,7 @@
     aria-label="Timeline"
   >
     {#if audioUrl}
-      <div class="timeline-time" aria-hidden="true">
-        <div>
-          <output>{formatTime(currentTime)}</output>
-        </div>
-        <output>{formatTime(duration)}</output>
-      </div>
+      <TimelineTime {currentTime} {duration} />
     {/if}
 
     <div
@@ -348,9 +345,7 @@
     />
 
     {#if pointA !== null}
-      <output class="loop-range"
-        >Loop: {formatTime(pointA)}–{pointB ? formatTime(pointB) : ""}</output
-      >
+      <LoopTime {pointA} {pointB} />
     {/if}
 
     {#if !audioUrl}
