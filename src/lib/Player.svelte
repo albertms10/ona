@@ -5,8 +5,9 @@
   import TimelineTime from "./TimelineTime.svelte";
   import Transport from "./Transport.svelte";
   import { clamp } from "./utils";
+  import Waveform from "./Waveform.svelte";
 
-  let audio: HTMLAudioElement = $state(new Audio());
+  let audio = $state(new Audio());
   let timelineSection: HTMLElement;
   let audioUrl = $state<string | null>(null);
   let gradientSeed = $state<number>(Math.floor(Math.random() * 4294967296));
@@ -256,6 +257,13 @@
     aria-label="Timeline"
   >
     {#if audioUrl}
+      <Waveform
+        {audioUrl}
+        {currentTime}
+        {duration}
+        {timelineSection}
+        {timeFromPointer}
+      />
       <TimelineTime {currentTime} {duration} />
     {/if}
 

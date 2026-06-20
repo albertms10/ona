@@ -192,6 +192,19 @@ body {
   align-items: stretch;
 }
 
+.timeline-waveform {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+  mix-blend-mode: plus-lighter;
+  opacity: 0.95;
+  pointer-events: none;
+}
+
 .timeline-time {
   position: absolute;
   inset: 16px 20px auto;
