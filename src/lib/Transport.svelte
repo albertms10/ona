@@ -127,7 +127,7 @@
       onclick={cycleSpeed}
       disabled={!audioUrl}
     >
-      {speed < 1 && speed >= 0 ? `.${speed * 100}` : speed}x
+      {speed < 1 ? `.${speed.toString().split(".")[1]}` : speed}x
     </button>
 
     <button
