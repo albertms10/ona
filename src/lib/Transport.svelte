@@ -7,6 +7,8 @@
     loopPending: boolean;
     cycleLoop: () => void;
     jump: (seconds: number) => void;
+    speed: number;
+    cycleSpeed: () => void;
   }
 
   const {
@@ -17,6 +19,8 @@
     loopActive,
     loopPending,
     cycleLoop,
+    speed,
+    cycleSpeed,
   }: Props = $props();
 </script>
 
@@ -124,6 +128,15 @@
   </div>
 
   <div class="transport-right">
+    <button
+      class="transport-button pill speed-toggle"
+      aria-label={`Playback speed ${speed}x`}
+      onclick={cycleSpeed}
+      disabled={!audioUrl}
+    >
+      {speed}x
+    </button>
+
     <button
       class="transport-button pill"
       onclick={() => jump(2)}

@@ -18,6 +18,15 @@
   let pointB = $state<number | null>(null);
   let draggingLoopPoint = $state<"a" | "b" | null>(null);
 
+  let speed = $state(1);
+
+  function cycleSpeed() {
+    const speeds = [1, 0.25, 0.5, 0.75];
+    const idx = speeds.indexOf(speed);
+    const next = speeds[(idx + 1) % speeds.length];
+    speed = next;
+  }
+
   const minLoopDuration = 1;
 
   const loopActive = $derived(
@@ -237,6 +246,20 @@
         break;
     }
   }
+
+  $effect(() => {
+    // Apply playback speed and enable pitch preservation where supported
+    if (!audio) return;
+
+    try {
+      (audio as any).playbackRate = speed;
+      (audio as any).preservesPitch = true;
+      (audio as any).webkitPreservesPitch = true;
+      (audio as any).mozPreservesPitch = true;
+    } catch (e) {
+      // ignore
+    }
+  });
 </script>
 
 <svelte:document onkeydown={handleKeydown} />
@@ -313,5 +336,7 @@
     {loopActive}
     {loopPending}
     {cycleLoop}
+    {speed}
+    {cycleSpeed}
   />
 </div>
