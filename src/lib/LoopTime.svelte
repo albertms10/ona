@@ -9,6 +9,9 @@
   const { pointA, pointB }: Props = $props();
 </script>
 
-<output class="loop-range"
-  >Loop: {formatTime(pointA)}–{pointB ? formatTime(pointB) : ""}</output
+<div
+  class="loop-range"
+  title="{formatTime(pointA)}–{pointB ? formatTime(pointB) : ''}"
 >
+  Loop on
+</div>

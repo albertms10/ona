@@ -11,7 +11,7 @@
 
 <div class="timeline-time" aria-hidden="true">
   <div>
-    <output>{formatTime(currentTime)}</output>
+    <span>{formatTime(currentTime)}</span>
   </div>
-  <output>{formatTime(duration)}</output>
+  <span>{formatTime(duration)}</span>
 </div>
