@@ -159,7 +159,8 @@
   async function loadExampleAudio() {
     clipboardStatus = "unknown";
 
-    const example = "https://samplelib.com/mp3/sample-6s.mp3";
+    const example =
+      "http://commondatastorage.googleapis.com/codeskulptor-assets/Epoq-Lepidoptera.ogg";
 
     try {
       const testAudio = new Audio();
