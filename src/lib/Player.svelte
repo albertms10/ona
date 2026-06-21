@@ -17,8 +17,10 @@
   let pointA = $state<number | null>(null);
   let pointB = $state<number | null>(null);
   let draggingLoopPoint = $state<"a" | "b" | null>(null);
-
   let speed = $state(1);
+
+  const params = new URLSearchParams(window.location.search);
+  const showWaveform = params.get("w") !== null;
 
   function cycleSpeed() {
     const speeds = [1, 0.25, 0.5, 0.75];
@@ -281,13 +283,15 @@
     aria-label="Timeline"
   >
     {#if audioUrl}
-      <Waveform
-        {audioUrl}
-        {currentTime}
-        {duration}
-        {timelineSection}
-        {timeFromPointer}
-      />
+      {#if showWaveform}
+        <Waveform
+          {audioUrl}
+          {currentTime}
+          {duration}
+          {timelineSection}
+          {timeFromPointer}
+        />
+      {/if}
       <TimelineTime {currentTime} {duration} />
     {/if}
 
